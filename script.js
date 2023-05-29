@@ -97,6 +97,60 @@ function GameController(
     console.log(`${getActivePlayer().name}'s turn`);
   };
 
+  const isWinningMove = (row, col) => {
+    const rows = board.length;
+    const cols = board[0].length;
+
+    // Check if the value of tiles in the same row is the same as player's token
+    const isCompleteRow = (() => {
+      for (let i = 0; i < cols; i++) {
+        if (board[row][i].getValue() !== getActivePlayer().token) {
+          return false;
+        }
+      }
+      return true;
+    })();
+
+    // Check if the value of tiles in the same column is the same as player's token
+    const isCompleteCol = (() => {
+      for (let i = 0; i < rows; i++) {
+        if (board[i][col].getValue() !== getActivePlayer().token) {
+          return false;
+        }
+      }
+      return true;
+    })();
+
+    // Check for diagonals
+    const isDiag1 = () => {
+      for (let i = 0; i < rows; i++) {
+        if (board[i][i].getValue() !== getActivePlayer().token) {
+          return false;
+        }
+      }
+      return true;
+    };
+
+    const isDiag2 = () => {
+      for (let i = 0; i < rows; i++) {
+        if (board[i][rows - 1 - i].getValue !== getActivePlayer().token) {
+          return false;
+        }
+      }
+      return true;
+    };
+
+    const isCompleteDiag = (() => {
+      if (Math.abs(row - col) % 2 !== 0) {
+        return false; // return false if cell is not on diagonal
+      } else {
+        return isDiag1 || isDiag2;
+      }
+    })();
+
+    return isCompleteRow || isCompleteCol || isCompleteDiag;
+  };
+
   // Code that will run at each round, starting after a player
   // has selected a tile.
   const playRound = (row, column) => {
@@ -105,19 +159,23 @@ function GameController(
     gameboard.markTile(row, column, getActivePlayer().token);
 
     /* Check whether current move is game ending move
-    ** either because current move is a winning move,
-    ** or because there is no current winner and roundCount is 9 
-    ** which means all cells have been filled.
-    ** If current move is a winning move, the rest of the code below 
-    ** will not be run
-    */
+     ** either because current move is a winning move,
+     ** or because there is no current winner and roundCount is 9
+     ** which means all tiles have been filled.
+     ** If current move is a winning move, the rest of the code below
+     ** will not be run
+     */
+    if (isWinningMove(row, column)) {
+      // Play game end sequence
+      // Anounce the winner
+      // Resets the game, keeping the score
+    }
 
     switchPlayerTurn();
-    printNewRound()
-  }
+    printNewRound();
+  };
 
   printNewRound();
 
-  return {playRound, getActivePlayer};
+  return { playRound, getActivePlayer };
 }
-
