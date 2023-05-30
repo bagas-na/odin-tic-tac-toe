@@ -122,7 +122,7 @@ function GameController(
   playerTwoName = "Player Two"
 ) {
   const gameboard = Gameboard();
-  let roundCount = 1;
+  let roundCount = 0;
 
   const players = [
     {
@@ -168,8 +168,9 @@ function GameController(
     if (isWinningMove(row, column, gameboard.getBoard(), getActivePlayer())) {
       // Play game end sequence
       moduleUI.endGameSequence(getActivePlayer());
-
       // Resets the game, keeping the score
+    } else if (roundCount === 9) {
+      moduleUI.endGameSequence(null); // No one wins, it's a draw
     }
     switchPlayerTurn();
     printNewRound();
@@ -217,10 +218,14 @@ const moduleUI = (() => {
     }
   }
 
-  function endGameSequence(player = game.getActivePlayer) {
+  function endGameSequence(player) {
     modal.classList.add('active');
     // Anounce the winner
-    winner.textContent = player.name.toUpperCase();
+    if (player === null) {
+      modal.textContent = 'DRAW';
+    } else {
+      winner.textContent = `${player.name.toUpperCase()} WINS`;
+    }
   }
 
   function playerClick() {
