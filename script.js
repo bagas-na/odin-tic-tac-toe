@@ -13,25 +13,24 @@ function Gameboard() {
   // column 0 will represent the left-most column.
   for (let i = 0; i < rows; i++) {
     board[i] = [];
-    for (let j = 0; i < columns; j++) {
+    for (let j = 0; j < columns; j++) {
       board[i].push(Tile());
     }
   }
-
   // Method to get board that is used by UI
   const getBoard = () => board;
 
   // Method to mark selected Tile to a player's token
   const markTile = (row, column, player) => {
-    // Return if selected tile is already filled
-    if (board[row][column].getValue !== 0) return;
+    if (board[row][column].getValue() !== 0) return;     // ignore if selected tile is already filled
     board[row][column].addToken(player);
   };
 
   // Method to print out board values
   const printBoard = () => {
     // For each tile objects in board, get its value
-    const boardValues = board.map((row) => row.map((tile) => tile.getValue));
+    const boardValues = board.map((row) => row.map((tile) => tile.getValue()));
+    console.log({ boardValues });
   };
 
   return { getBoard, markTile, printBoard };
@@ -58,6 +57,61 @@ function Tile() {
   return { addToken, getValue };
 }
 
+function isWinningMove(row, col, board, player) {
+  console.log({ board });
+  const rows = board.length;
+  const cols = board[0].length;
+
+  // Check if the value of tiles in the same row is the same as player's token
+  const isCompleteRow = (() => {
+    for (let i = 0; i < cols; i++) {
+      if (board[row][i].getValue() !== player.token) {
+        return false;
+      }
+    }
+    return true;
+  })();
+
+  // Check if the value of tiles in the same column is the same as player's token
+  const isCompleteCol = (() => {
+    for (let i = 0; i < rows; i++) {
+      if (board[i][col].getValue() !== player.token) {
+        return false;
+      }
+    }
+    return true;
+  })();
+
+  // Check for diagonals
+  const isDiag1 = () => {
+    for (let i = 0; i < rows; i++) {
+      if (board[i][i].getValue() !== player.token) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const isDiag2 = () => {
+    for (let i = 0; i < rows; i++) {
+      if (board[i][rows - 1 - i].getValue !== player.token) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const isCompleteDiag = (() => {
+    if (Math.abs(row - col) % 2 !== 0) {
+      return false; // return false if cell is not on diagonal
+    } else {
+      return isDiag1() || isDiag2();
+    }
+  })();
+
+  return isCompleteRow || isCompleteCol || isCompleteDiag;
+}
+
 /*
  ** The GameController will be responsible for controlling the
  ** flow and state of the game's turns, as well as whether
@@ -69,7 +123,7 @@ function GameController(
   playerTwoName = "Player Two"
 ) {
   const gameboard = Gameboard();
-  const roundCount = 1;
+  let roundCount = 1;
 
   const players = [
     {
@@ -87,68 +141,15 @@ function GameController(
    ** (2) get the current activePlayer
    */
   let activePlayer = players[0];
+
   const switchPlayerTurn = () => {
     activePlayer = activePlayer === players[0] ? players[1] : players[0];
   };
   const getActivePlayer = () => activePlayer;
 
   const printNewRound = () => {
-    board.printBoard();
+    gameboard.printBoard();
     console.log(`${getActivePlayer().name}'s turn`);
-  };
-
-  const isWinningMove = (row, col) => {
-    const rows = board.length;
-    const cols = board[0].length;
-
-    // Check if the value of tiles in the same row is the same as player's token
-    const isCompleteRow = (() => {
-      for (let i = 0; i < cols; i++) {
-        if (board[row][i].getValue() !== getActivePlayer().token) {
-          return false;
-        }
-      }
-      return true;
-    })();
-
-    // Check if the value of tiles in the same column is the same as player's token
-    const isCompleteCol = (() => {
-      for (let i = 0; i < rows; i++) {
-        if (board[i][col].getValue() !== getActivePlayer().token) {
-          return false;
-        }
-      }
-      return true;
-    })();
-
-    // Check for diagonals
-    const isDiag1 = () => {
-      for (let i = 0; i < rows; i++) {
-        if (board[i][i].getValue() !== getActivePlayer().token) {
-          return false;
-        }
-      }
-      return true;
-    };
-
-    const isDiag2 = () => {
-      for (let i = 0; i < rows; i++) {
-        if (board[i][rows - 1 - i].getValue !== getActivePlayer().token) {
-          return false;
-        }
-      }
-      return true;
-    };
-
-    const isCompleteDiag = (() => {
-      if (Math.abs(row - col) % 2 !== 0) {
-        return false; // return false if cell is not on diagonal
-      } else {
-        return isDiag1 || isDiag2;
-      }
-    })();
-
-    return isCompleteRow || isCompleteCol || isCompleteDiag;
   };
 
   // Code that will run at each round, starting after a player
@@ -165,12 +166,11 @@ function GameController(
      ** If current move is a winning move, the rest of the code below
      ** will not be run
      */
-    if (isWinningMove(row, column)) {
+    if (isWinningMove(row, column, gameboard.getBoard(), getActivePlayer())) {
       // Play game end sequence
       // Anounce the winner
       // Resets the game, keeping the score
     }
-
     switchPlayerTurn();
     printNewRound();
   };
@@ -179,3 +179,23 @@ function GameController(
 
   return { playRound, getActivePlayer };
 }
+
+const game = GameController();
+
+// UI modules to contain functions for event listeners
+const moduleUI = (() => {
+  const tilesUI = document.querySelectorAll(".tile");
+  function updateDisplay(board) {
+
+  }
+
+  function playerClick() {
+    const row = this.getAttribute("data-row");
+    const col = this.getAttribute("data-col");
+    game.playRound(row, col);
+  }
+
+  tilesUI.forEach((tileUI) => {
+    tileUI.addEventListener("click", playerClick);
+  });
+})();
