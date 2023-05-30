@@ -22,7 +22,7 @@ function Gameboard() {
 
   // Method to mark selected Tile to a player's token
   const markTile = (row, column, player) => {
-    if (board[row][column].getValue() !== 0) return;     // ignore if selected tile is already filled
+    if (board[row][column].getValue() !== 0) return; // ignore if selected tile is already filled
     board[row][column].addToken(player);
   };
 
@@ -132,7 +132,7 @@ function GameController(
     },
     {
       name: playerTwoName,
-      tolen: 2,
+      token: 2,
     },
   ];
 
@@ -143,7 +143,9 @@ function GameController(
   let activePlayer = players[0];
 
   const switchPlayerTurn = () => {
+    console.log({ activePlayer });
     activePlayer = activePlayer === players[0] ? players[1] : players[0];
+    console.log({ activePlayer });
   };
   const getActivePlayer = () => activePlayer;
 
@@ -157,6 +159,7 @@ function GameController(
   const playRound = (row, column) => {
     roundCount++;
     // Select a Tile and place marks
+    console.log("player token:", getActivePlayer().token);
     gameboard.markTile(row, column, getActivePlayer().token);
 
     /* Check whether current move is game ending move
@@ -177,7 +180,7 @@ function GameController(
 
   printNewRound();
 
-  return { playRound, getActivePlayer };
+  return { playRound, getActivePlayer, getBoard: gameboard.getBoard() };
 }
 
 const game = GameController();
@@ -185,17 +188,48 @@ const game = GameController();
 // UI modules to contain functions for event listeners
 const moduleUI = (() => {
   const tilesUI = document.querySelectorAll(".tile");
-  function updateDisplay(board) {
+  const playerOneTurn = document.querySelector(".player-turn .player-1");
+  const playerTwoTurn = document.querySelector(".player-turn .player-2");
 
+  function updateDisplay(
+    board = game.getBoard,
+    player = game.getActivePlayer()
+  ) {
+    // Get the tile token value and change the tile color correspondingly
+    tilesUI.forEach((tileUI) => {
+      const row = tileUI.getAttribute("data-row");
+      const col = tileUI.getAttribute("data-col");
+      const tileValue = board[row][col].getValue();
+      tileUI.setAttribute("class", "tile");
+
+      if (tileValue === 0) {
+        tileUI.classList.add(`player-${player.token}`);
+      } else if (tileValue !== 0) {
+        tileUI.classList.add(`player-${tileValue}`);
+        tileUI.classList.add("active");
+      }
+    });
+
+    if (player.token === 1) {
+      playerOneTurn.setAttribute("class", "player-1 active");
+      playerTwoTurn.setAttribute("class", "player-2");
+    } else if (player.token === 2) {
+      playerOneTurn.setAttribute("class", "player-1");
+      playerTwoTurn.setAttribute("class", "player-2 active");
+    }
   }
 
   function playerClick() {
     const row = this.getAttribute("data-row");
     const col = this.getAttribute("data-col");
+    console.log(this);
     game.playRound(row, col);
+    updateDisplay();
   }
 
   tilesUI.forEach((tileUI) => {
     tileUI.addEventListener("click", playerClick);
   });
+
+  updateDisplay();
 })();
