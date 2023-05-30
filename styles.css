@@ -8,11 +8,12 @@ main {
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 10px;
 }
 
 .player-turn {
     width: min(90vw, 900px);
-    margin: 2rem 0 1rem;
+    margin: 1rem 0 0;
     font-family: 'Fugaz One', cursive;
     font-size: 30px;
     letter-spacing: 0.2ch;
@@ -50,10 +51,12 @@ main {
 }
 
 .container {
-    width: clamp(600px, 90vw, 900px);
-    height: clamp(600px, 90vw, 900px);
-    margin: 10px auto;
+    position: relative;
+    width: clamp(500px, 90vw, 720px);
+    height: clamp(500px, 90vw, 720px);
+    margin: 0 auto;
     padding: 20px;
+    border-radius: 40px;
     background-color: white;
     box-shadow: 1px 2px 5px 1px rgba(128,128,128,0.2);
     display: grid;
@@ -65,7 +68,7 @@ main {
 .tile {
     background-color: white;
     box-shadow: 1px 2px 8px 1px rgba(128,128,128,0.2);
-    z-index: 1;
+    z-index: 0;
 }
 
 .tile:nth-child(1) {
@@ -86,7 +89,7 @@ main {
 
 .container .tile:hover:not(.active) {
     box-shadow: 1px 1px 10px 3px hsla(0, 0%, 33%, 0.2);
-    z-index: 2;
+    z-index: 1;
 }
 .container .player-1:hover:not(.active) {
     box-shadow: 1px 1px 10px 3px hsla(0, 100%, 60%, 0.3);
@@ -112,4 +115,24 @@ main {
 
 h2, p {
     margin: 0;
+}
+
+.modal {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    border-radius: 40px;
+    color: white;
+    font-family: 'Fugaz One', cursive;
+    font-size: 2.5rem;
+    text-align: center;
+    z-index: -1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.modal.active {
+    z-index: 2;
 }

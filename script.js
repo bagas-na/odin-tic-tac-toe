@@ -58,7 +58,6 @@ function Tile() {
 }
 
 function isWinningMove(row, col, board, player) {
-  console.log({ board });
   const rows = board.length;
   const cols = board[0].length;
 
@@ -143,9 +142,7 @@ function GameController(
   let activePlayer = players[0];
 
   const switchPlayerTurn = () => {
-    console.log({ activePlayer });
     activePlayer = activePlayer === players[0] ? players[1] : players[0];
-    console.log({ activePlayer });
   };
   const getActivePlayer = () => activePlayer;
 
@@ -159,7 +156,6 @@ function GameController(
   const playRound = (row, column) => {
     roundCount++;
     // Select a Tile and place marks
-    console.log("player token:", getActivePlayer().token);
     gameboard.markTile(row, column, getActivePlayer().token);
 
     /* Check whether current move is game ending move
@@ -171,7 +167,8 @@ function GameController(
      */
     if (isWinningMove(row, column, gameboard.getBoard(), getActivePlayer())) {
       // Play game end sequence
-      // Anounce the winner
+      moduleUI.endGameSequence(getActivePlayer());
+
       // Resets the game, keeping the score
     }
     switchPlayerTurn();
@@ -187,14 +184,14 @@ const game = GameController();
 
 // UI modules to contain functions for event listeners
 const moduleUI = (() => {
-  const tilesUI = document.querySelectorAll(".tile");
+  const container = document.querySelector(".container");
+  const tilesUI = container.querySelectorAll(".tile");
   const playerOneTurn = document.querySelector(".player-turn .player-1");
   const playerTwoTurn = document.querySelector(".player-turn .player-2");
+  const modal = container.querySelector(".modal");
+  const winner = modal.querySelector(".winner-name");
 
-  function updateDisplay(
-    board = game.getBoard,
-    player = game.getActivePlayer()
-  ) {
+  function updateDisplay(board = game.getBoard, player = game.getActivePlayer()) {
     // Get the tile token value and change the tile color correspondingly
     tilesUI.forEach((tileUI) => {
       const row = tileUI.getAttribute("data-row");
@@ -210,6 +207,7 @@ const moduleUI = (() => {
       }
     });
 
+    // Part of code to change player turn indicator
     if (player.token === 1) {
       playerOneTurn.setAttribute("class", "player-1 active");
       playerTwoTurn.setAttribute("class", "player-2");
@@ -219,10 +217,15 @@ const moduleUI = (() => {
     }
   }
 
+  function endGameSequence(player = game.getActivePlayer) {
+    modal.classList.add('active');
+    // Anounce the winner
+    winner.textContent = player.name.toUpperCase();
+  }
+
   function playerClick() {
     const row = this.getAttribute("data-row");
     const col = this.getAttribute("data-col");
-    console.log(this);
     game.playRound(row, col);
     updateDisplay();
   }
@@ -232,4 +235,6 @@ const moduleUI = (() => {
   });
 
   updateDisplay();
+
+  return {updateDisplay, endGameSequence};
 })();
