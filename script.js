@@ -224,7 +224,7 @@ const moduleUI = (() => {
     if (player === null) {
       modal.textContent = 'DRAW';
     } else {
-      winner.textContent = `${player.name.toUpperCase()} WINS`;
+      winner.textContent = player.name.toUpperCase();
     }
   }
 
